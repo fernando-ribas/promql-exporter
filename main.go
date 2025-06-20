@@ -24,8 +24,8 @@ var (
 	namespace     = kingpin.Flag("namespace", "Namespace for metrics").Envar("PROMQL_EXPORTER_NAMESPACE").Default("promql").String()
 	listenAddress = kingpin.Flag("web.listen-address", "Address to listen on for web interface and telemetry.").Envar("PROMQL_EXPORTER_WEB_LISTEN_ADDRESS").Default(":9517").String()
 	metricPath    = kingpin.Flag("web.telemetry-path", "Path under which to expose metrics.").Envar("PROMQL_EXPORTER_WEB_TELEMETRY_PATH").Default("/metrics").String()
+	ruleQuery     = kingpin.Flag("rule", "PromQL query to filter metrics").Envar("PROMQL_EXPORTER_RULE_QUERY").Default("{__name__!=\"\"}").String()
 	logFormat     = kingpin.Flag("log.format", "Log format, valid options are txt and json").Envar("PROMQL_EXPORTER_LOG_FORMAT").Default("txt").String()
-	// logLevel       = kingpin.Flag("log.level", "Log level").Envar("PROMQL_EXPORTER_LOG_FORMAT").Default("debug").String()
 )
 
 func main() {
@@ -47,7 +47,6 @@ func main() {
 			slog.Warn(fmt.Sprintf("Invalid header: %s", header))
 			continue
 		}
-
 		headersKV[strings.TrimSpace(parts[0])] = strings.TrimSpace(parts[1])
 	}
 
@@ -62,7 +61,6 @@ func main() {
 	slog.Info(fmt.Sprintf("Providing metrics at %s%s", *listenAddress, *metricPath))
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		//nolint:errcheck
 		w.Write([]byte(`<html>
 			<head><title>PromQL Exporter</title></head>
 			<body>
@@ -73,10 +71,10 @@ func main() {
 	})
 
 	http.HandleFunc("/metrics", func(w http.ResponseWriter, r *http.Request) {
-		result, err := exporter.GetMetrics(*endpoint, headersKV)
+		result, err := exporter.GetMetricsWithQuery(*endpoint, headersKV, *ruleQuery)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
-			_, _ = w.Write([]byte(fmt.Sprintf("error: %s", err))) //nolint:errcheck
+			_, _ = w.Write([]byte(fmt.Sprintf("error: %s", err)))
 			return
 		}
 
@@ -88,23 +86,19 @@ func main() {
 			if !ok {
 				continue
 			}
-
 			delete(result.Data.Result[i].Metric, "__name__")
-
 			labels := []string{}
 			for k, v := range result.Data.Result[i].Metric {
 				labels = append(labels, fmt.Sprintf("%s=\"%s\"", k, v))
 			}
-
 			value := result.Data.Result[i].Value[1].(string)
-
 			buf.WriteString(fmt.Sprintf("%s_%s{%s} %s\n", *namespace, name, strings.Join(labels, ", "), value))
 			count++
 		}
 
 		slog.Info(fmt.Sprintf("Extracted %d metrics", count))
 		w.WriteHeader(http.StatusOK)
-		_, _ = w.Write(buf.Bytes()) //nolint:errcheck
+		_, _ = w.Write(buf.Bytes())
 	})
 
 	log.Fatal(http.ListenAndServe(*listenAddress, nil))
