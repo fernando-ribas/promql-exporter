@@ -21,7 +21,7 @@ var (
 
 	endpoint      = kingpin.Flag("endpoint", "PromQL http endpoint").Envar("ENDPOINT").Required().String()
 	headers       = kingpin.Flag("header", "PromQL http header").Envar("HEADER").Strings()
-	namespace     = kingpin.Flag("namespace", "Namespace for metrics").Envar("PROMQL_EXPORTER_NAMESPACE").Default("promql").String()
+	namespace     = kingpin.Flag("namespace", "Namespace for metrics").Envar("PROMQL_EXPORTER_NAMESPACE").Default("").String()
 	listenAddress = kingpin.Flag("web.listen-address", "Address to listen on for web interface and telemetry.").Envar("PROMQL_EXPORTER_WEB_LISTEN_ADDRESS").Default(":9517").String()
 	metricPath    = kingpin.Flag("web.telemetry-path", "Path under which to expose metrics.").Envar("PROMQL_EXPORTER_WEB_TELEMETRY_PATH").Default("/metrics").String()
 	ruleQuery     = kingpin.Flag("rule", "PromQL query to filter metrics").Envar("PROMQL_EXPORTER_RULE_QUERY").Default("{__name__!=\"\"}").String()
@@ -93,7 +93,7 @@ func main() {
 				labels = append(labels, fmt.Sprintf("%s=\"%s\"", k, v))
 			}
 			value := result.Data.Result[i].Value[1].(string)
-			buf.WriteString(fmt.Sprintf("%s{%s} %s\n", name, strings.Join(labels, ", "), value))
+			buf.WriteString(fmt.Sprintf("%s_%s{%s} %s\n", *namespace, name, strings.Join(labels, ", "), value))
 			count++
 		}
 
