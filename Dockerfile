@@ -6,7 +6,7 @@ COPY . .
 RUN go mod tidy
 RUN go build -o promql_exporter .
 
-FROM gcr.io/distroless/base-debian11
+FROM alpine
 WORKDIR /
 COPY --from=builder /app/promql_exporter .
 
