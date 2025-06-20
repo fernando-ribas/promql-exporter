@@ -93,7 +93,7 @@ func main() {
 				labels = append(labels, fmt.Sprintf("%s=\"%s\"", k, v))
 			}
 			value := result.Data.Result[i].Value[1].(string)
-			buf.WriteString(fmt.Sprintf("%s_%s{%s} %s\n", *namespace, name, strings.Join(labels, ", "), value))
+			buf.WriteString(fmt.Sprintf("%s{%s} %s\n", name, strings.Join(labels, ", "), value))
 			count++
 		}
 
