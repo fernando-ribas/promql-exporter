@@ -73,6 +73,7 @@ func main() {
 	http.HandleFunc("/metrics", func(w http.ResponseWriter, r *http.Request) {
 		result, err := exporter.GetMetricsWithQuery(*endpoint, headersKV, *ruleQuery)
 		if err != nil {
+			slog.Error("Failed to query Prometheus", slog.String("error", err.Error()))
 			w.WriteHeader(http.StatusInternalServerError)
 			_, _ = w.Write([]byte(fmt.Sprintf("error: %s", err)))
 			return
