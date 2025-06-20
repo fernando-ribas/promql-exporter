@@ -81,6 +81,10 @@ func main() {
 
 		count := 0
 		buf := bytes.NewBuffer([]byte{})
+		nsPrefix := *namespace
+		if nsPrefix != "" {
+			nsPrefix += "_"
+		}
 
 		for i := range result.Data.Result {
 			name, ok := result.Data.Result[i].Metric["__name__"]
@@ -93,7 +97,7 @@ func main() {
 				labels = append(labels, fmt.Sprintf("%s=\"%s\"", k, v))
 			}
 			value := result.Data.Result[i].Value[1].(string)
-			buf.WriteString(fmt.Sprintf("%s_%s{%s} %s\n", *namespace, name, strings.Join(labels, ", "), value))
+			buf.WriteString(fmt.Sprintf("%s%s{%s} %s\n", nsPrefix, name, strings.Join(labels, ", "), value))
 			count++
 		}
 
