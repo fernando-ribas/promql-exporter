@@ -22,7 +22,7 @@ var (
 	endpoint      = kingpin.Flag("endpoint", "PromQL http endpoint").Envar("ENDPOINT").Required().String()
 	headers       = kingpin.Flag("header", "PromQL http header").Envar("HEADER").Strings()
 	namespace     = kingpin.Flag("namespace", "Namespace for metrics").Envar("PROMQL_EXPORTER_NAMESPACE").Default("").String()
-	listenAddress = kingpin.Flag("web.listen-address", "Address to listen on for web interface and telemetry.").Envar("PROMQL_EXPORTER_WEB_LISTEN_ADDRESS").Default(":9517").String()
+	listenAddress = kingpin.Flag("web.listen-address", "Address to listen on for web interface and telemetry.").Envar("PROMQL_EXPORTER_WEB_LISTEN_ADDRESS").Default(":9090").String()
 	metricPath    = kingpin.Flag("web.telemetry-path", "Path under which to expose metrics.").Envar("PROMQL_EXPORTER_WEB_TELEMETRY_PATH").Default("/metrics").String()
 	ruleQuery     = kingpin.Flag("rule", "PromQL query to filter metrics").Envar("PROMQL_EXPORTER_RULE_QUERY").Default("{__name__!=\"\"}").String()
 	logFormat     = kingpin.Flag("log.format", "Log format, valid options are txt and json").Envar("PROMQL_EXPORTER_LOG_FORMAT").Default("txt").String()
