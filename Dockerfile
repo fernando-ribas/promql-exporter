@@ -1,10 +1,13 @@
+FROM golang:1.22 as builder
 
-FROM alpine:latest as certs
+WORKDIR /app
+COPY . .
 
-RUN apk --update add ca-certificates
+RUN go mod tidy
+RUN go build -o promql_exporter .
 
-COPY promql_exporter /promql_exporter
+FROM gcr.io/distroless/base-debian11
+WORKDIR /
+COPY --from=builder /app/promql_exporter .
 
 ENTRYPOINT ["/promql_exporter"]
-
-EXPOSE 9312
